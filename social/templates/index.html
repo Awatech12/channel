@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #image{
+            display: none;
+        }
+        #imageOutput{
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="welcome"></h2>
+    <label for="username">Username: <span id="usernameOutput"></span></label><br>
+    <input type="text" name="username" id="username"><br>
+    <label for="message">Message:</label><br>
+    <input type="text" name="message" id="message"><br>
+    <button id="sendBtn">Send</button>
+    <div id="messageOutput"></div>
+    <script>
+        const welcome = document.getElementById('welcome');
+        const usernameOutput = document.getElementById('usernameOutput');
+        const messageOutput = document.getElementById('messageOutput');
+        const socket = new WebSocket(`ws://${window.location.host}/ws/test/`);
+        const sendBtn = document.getElementById('sendBtn');
+        const user = document.getElementById('username');
+        const inputMessage = document.getElementById('message');
+        socket.addEventListener('message', (e)=>{
+            const data = JSON.parse(e.data);
+            const p = document.createElement('p');
+            if(data.type ==='user_connect'){
+                welcome.innerHTML=data.message;
+                //messageOutput.appendChild(p);
+            }
+            if(data.type ==='Response'){
+                p.innerHTML=`${data.username}:${data.message}`;
+                messageOutput.appendChild(p);
+            }
+        })
+        sendBtn.addEventListener('click', function(){
+            const username = user.value;
+            usernameOutput.innerHTML = username;
+            user.style.display= 'none';
+            const message = inputMessage.value;
+            if(!username ||!message) return;
+            socket.send(JSON.stringify({
+                username,
+                message
+            }));
+            inputMessage.value='';
+        })
+    </script>
+</body>
+</html>
